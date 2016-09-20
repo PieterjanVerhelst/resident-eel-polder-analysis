@@ -162,7 +162,7 @@ dataH=merge(dataH, summary, by="Transmitter")
 #########################################################
 # Add day, night and twilight
 
-Diurnal<-"Diurnal.csv" 
+Diurnal<-"../resident-eel-polder-analysis//data//external//Diurnal.csv" 
 Diurnal<-read.csv(Diurnal, header=TRUE, stringsAsFactors=FALSE)
 
 # Preprocessing format
