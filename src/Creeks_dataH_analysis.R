@@ -29,7 +29,7 @@ library(arm)        # To give nice model output
 #detach("package:usdm", unload=TRUE)
 
 # Load in homing data
-dataH<-"dataH.csv" 
+dataH<-"../resident-eel-polder-analysis//data//interim//dataH.csv" 
 dataH<-read.csv(dataH, header=TRUE, stringsAsFactors=FALSE)
 
 # Set correct time notation
