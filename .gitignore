@@ -33,3 +33,6 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 resident-eel-polder-analysis.Rproj
+
+# current embargo on the data itself
+data/interim/
