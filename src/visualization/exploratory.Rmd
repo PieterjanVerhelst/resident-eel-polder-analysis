@@ -1,0 +1,25 @@
+---
+title: "exploratory_plots"
+author: "Stijn Van Hoey"
+date: "September 30, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = FALSE}
+library(dplyr)
+dataH <- read.csv("../../data/interim/dataH_enriched.csv")
+```
+
+## Plot number of eel per location
+
+```{r pressure, echo=FALSE}
+# Plot number of eel per location
+
+
+
+```
+
