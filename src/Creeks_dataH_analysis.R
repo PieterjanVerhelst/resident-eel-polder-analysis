@@ -56,7 +56,7 @@ dataH <- dataH[ ! dataH$Transmitter %in% c("A69-1601-29923", "A69-1601-31863", "
 
 # ADD EEL CHARACTERISTICS
 # Catch_location_type was not added in Creeks_data_analysis.R
-eels<-"Eels.csv" #Filename with fish parameters (length, weight, stage, catch location)
+eels<-"data/interim/Eels.csv" #Filename with fish parameters (length, weight, stage, catch location)
 eels<-read.csv(eels)
 eels<-eels[ !duplicated(eels$Transmitter) , ]#this removes second duplicate (=in this case the pumping station eel)
 eels2 = eels %>%
