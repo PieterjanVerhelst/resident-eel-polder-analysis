@@ -34,14 +34,28 @@ polders <- c("bh-6", "bh-7", "bh-8", "bh-9", "bh-10", "bh-11", "bh-13", "bh-14",
 dataH <- dataH[dataH$Station.Name %in% polders, ]
 
 # Remove eels with 14 days tracking and less
-#(A69-1601-29923, A69-1601-31863, A69-1601-31882, A69-1601-31883)
+# (A69-1601-29923, A69-1601-31863, A69-1601-31882, A69-1601-31883)
 eels_too_short_tracking <- c("A69-1601-29923", "A69-1601-31863",
                     "A69-1601-31882", "A69-1601-31883")
 dataH <- dataH[!dataH$Transmitter %in% eels_too_short_tracking, ]
 
 #############################
 # COMBINE EEL CHARACTERISTICS
+# File with fish parameters (length, weight, stage, catch location)
+# for this analysis, the interest is the Catch_location_type, which will be
+# merged with the dataH, using the transmitter data
 #############################
+
+eels <- "data/interim/Eels.csv"
+eels <- read.csv(eels)
+# remove duplicate, i.e. the pumping station eel
+eels <- eels[ !duplicated(eels$Transmitter), ]
+# update dataH with the new column catch location type
+dataH <- merge(dataH, eels[, c("Transmitter", "Catch_location_type")],
+               by = "Transmitter")
+
+
+
 
 
 
