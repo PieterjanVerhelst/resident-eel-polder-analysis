@@ -52,8 +52,6 @@ dataH=dataH[dataH$Station.Name %in% polder,]
 # Remove eels with 14 days tracking and less (A69-1601-29923, A69-1601-31863, A69-1601-31882, A69-1601-31883)
 dataH <- dataH[ ! dataH$Transmitter %in% c("A69-1601-29923", "A69-1601-31863", "A69-1601-31882", "A69-1601-31883"), ]
 
-#----svh
-
 # ADD EEL CHARACTERISTICS
 # Catch_location_type was not added in Creeks_data_analysis.R
 eels<-"data/interim/Eels.csv" #Filename with fish parameters (length, weight, stage, catch location)
@@ -144,12 +142,16 @@ summary=summarise(detections,
                   days=with(detections, max(Departurenum) - min(Arrivalnum))
 )
 
-
 summary$days=summary$days/(60*60*24)
 par(mar=c(6,4.1,4.1,2.1))
 barplot(summary$days, names.arg=summary$Transmitter, cex.names=0.8, ylim=c(0,1200),las=2)
 
-dataH=merge(dataH, summary, by="Transmitter")
+# SVH-input
+test <- dataH %>%
+            group_by(Transmitter) %>%
+            mutate(days = (max(Departurenum) - min(Arrivalnum))/(60*60*24))
+
+dataH=merge(dataH, summary, by="Transmitter") # SVH: nthis is later reused-> need to be in enrich
 
 # Calculate tracking period in seconds
 detections = dataH %>%
@@ -158,7 +160,7 @@ detections = dataH %>%
 
 summary=summarise(detections,
                   seconds=with(detections, max(Departurenum) - min(Arrivalnum))
-)
+)  # SVH: I would use another name as seconds...
 
 dataH=merge(dataH, summary, by="Transmitter")
 
@@ -474,8 +476,9 @@ DataHdistance = distinct(select(Distance, Transmitter, Length, Weight, Stadium, 
 #write.csv(DataHdistance, "DataHdistance.csv")
 
 # Load in DataHdistance
-DataHdistance<-"DataHdistance.csv"
-DataHdistance<-read.csv(DataHdistance, header=TRUE, stringsAsFactors=FALSE)
+DataHdistance <- "data/interim/DataHdistance.csv"
+DataHdistance <- read.csv(DataHdistance, header = TRUE,
+                          stringsAsFactors = FALSE)
 
 # Remove eels with 14 days tracking and less (A69-1601-29923, A69-1601-31863, A69-1601-31882, A69-1601-31883)
 DataHdistance <- DataHdistance[ ! DataHdistance$Transmitter %in% c("A69-1601-29923", "A69-1601-31863", "A69-1601-31882", "A69-1601-31883"), ]
@@ -505,6 +508,7 @@ summary=summarise(summary,
 
 summary$locations=NULL
 summary$eels=as.numeric(summary$eels)
+eel_per_loc <- summary
 barplot(summary$eels, names.arg=summary$Catch_location_type, cex.names=0.8, main="Number of detected eels per catch location type", ylab="Number of eels")
 
 
@@ -512,7 +516,36 @@ barplot(summary$eels, names.arg=summary$Catch_location_type, cex.names=0.8, main
 boxplot(distance2~Catch_location, DataHdistance, xlab = "Catch location", ylab = "Distance (m)")
 
 # Create boxplot with distance for each catch location type
-boxplot(distance2~Catch_location_type, DataHdistance, xlab = "Catch location type", ylab = "Distance (m)", ylim=c(0, 20000), cex.lab=1.25, cex.axis=1.25)
+# TODO: add number of eels (transmitter IDs) taken into account at the top of the boxplot?
+
+#
+# make a named list for the location of the number of eels
+eel_per_loc <- summary
+eels_per_loc_list <- rep(20000, 3)
+names(eels_per_loc_list) <- eel_per_loc$Catch_location_type
+# create ggplot (cfr. styling earlier plot)
+fig_homerange <- ggplot(DataHdistance, aes(x = Catch_location_type,
+                                           y = distance2)) +
+                    geom_boxplot() +
+                    scale_y_continuous(breaks = seq(0, 15000, by = 5000)) +
+                    theme_minimal() +
+                    ylab("Distance (m)") +
+                    geom_text(data = data.frame(),
+                              aes(x = names(eels_per_loc_list),
+                                  y = eels_per_loc_list,
+                                  label = as.character(eel_per_loc$eels)),
+                              col = 'black', size = 6) +
+                    xlab("") +
+                    theme(axis.title.y = element_text(margin = margin(r = 5))) +
+                    theme(axis.text = element_text(size = 14),
+                          axis.title = element_text(size = 16))
+ggsave(fig_homerange, file = './home_range_boxplot.png')
+#--------------------------------
+
+boxplot(distance2~Catch_location_type, DataHdistance,
+        xlab = "Catch location type",
+        ylab = "Distance (m)",
+        ylim=c(0, 20000), cex.lab=1.25, cex.axis=1.25)
 
 # Create boxplot with distance for each stadium
 boxplot(distance2~Stadium, DataHdistance, xlab = "Stadium", main="Home range per stadium", ylab = "Distance (m)", ylim=c(0, 20000), cex.lab=1.25, cex.axis=1.25)

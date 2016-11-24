@@ -54,6 +54,29 @@ eels <- eels[ !duplicated(eels$Transmitter), ]
 dataH <- merge(dataH, eels[, c("Transmitter", "Catch_location_type")],
                by = "Transmitter")
 
+# addition of $stations, $moves and $maxdetections not in enrich,
+# as not used for further analysis
+
+#############################
+# ADD the total tracking period
+#############################
+
+# detections <- dataH %>%
+#     group_by(Transmitter) %>%
+#     select(Transmitter, Arrivalnum, Departurenum)
+#
+# summary=summarise(detections,
+#                   seconds=with(detections, max(Departurenum) - min(Arrivalnum))
+# )
+
+tracking_length <- dataH %>%
+                    group_by(Transmitter) %>%
+                    select(Transmitter, Arrivalnum, Departurenum) %>%
+                    mutate(total_tracking = max(Departurenum) - min(Arrivalnum))
+
+# Add the total lengths to
+dataH=merge(dataH, summary, by="Transmitter")
+
 
 
 
