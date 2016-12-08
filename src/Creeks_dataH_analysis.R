@@ -12,7 +12,7 @@ library(ResourceSelection)
 library(userfriendlyscience)
 library(PMCMR)
 library(usdm)     # warning: this package masks 'select' from package dplyr
-library (aod)
+library(aod)
 library(lme4)
 library(multcomp)
 library(geepack)
@@ -29,8 +29,8 @@ library(arm)        # To give nice model output
 #detach("package:usdm", unload=TRUE)
 
 # Load in homing data
-dataH<-"../resident-eel-polder-analysis//data//interim//dataH.csv" 
-dataH<-read.csv(dataH, header=TRUE, stringsAsFactors=FALSE)
+dataH <- "data/interim/dataH.csv"
+dataH <- read.csv(dataH, header = TRUE, stringsAsFactors = FALSE)
 
 # Set correct time notation
 class(dataH$Departure_time)
@@ -44,16 +44,17 @@ dataH$Month=month(dataH$Arrival)
 dataH$Year= as.numeric(format(dataH$Arrival_time,'%Y'))
 
 # Select locations/receivers according to study area (bh-5 is still in dataset)
-polder=c("bh-6","bh-7","bh-8","bh-9","bh-10","bh-11","bh-13","bh-14","bh-15","bh-16","bh-18","bh-20","bh-21","bh-22","bh-23","bh-24","bh-25","bh-26","bh-27","bh-28","bh-29","bh-30")
+polder=c("bh-6","bh-7","bh-8","bh-9","bh-10","bh-11","bh-13","bh-14","bh-15",
+         "bh-16","bh-18","bh-20","bh-21","bh-22","bh-23","bh-24","bh-25",
+         "bh-26","bh-27","bh-28","bh-29","bh-30")
 dataH=dataH[dataH$Station.Name %in% polder,]
 
 # Remove eels with 14 days tracking and less (A69-1601-29923, A69-1601-31863, A69-1601-31882, A69-1601-31883)
 dataH <- dataH[ ! dataH$Transmitter %in% c("A69-1601-29923", "A69-1601-31863", "A69-1601-31882", "A69-1601-31883"), ]
 
-
 # ADD EEL CHARACTERISTICS
 # Catch_location_type was not added in Creeks_data_analysis.R
-eels<-"Eels.csv" #Filename with fish parameters (length, weight, stage, catch location)
+eels<-"data/interim/Eels.csv" #Filename with fish parameters (length, weight, stage, catch location)
 eels<-read.csv(eels)
 eels<-eels[ !duplicated(eels$Transmitter) , ]#this removes second duplicate (=in this case the pumping station eel)
 eels2 = eels %>%
@@ -78,7 +79,7 @@ summary$stations=NULL
 summary$eels=as.numeric(summary$eels)
 barplot(summary$eels, names.arg=summary$Station.Name, cex.names=0.8)
 
-# Plot number of locations per eel 
+# Plot number of locations per eel
 detections = dataH %>%
   group_by(Transmitter, Station.Name)%>%
   select(Transmitter, Station.Name)
@@ -118,9 +119,9 @@ summary$moves=as.numeric(summary$moves)
 par(mar=c(6,4.1,4.1,2.1))
 barplot(summary$moves, names.arg=summary$Transmitter, cex.names=0.8, ylim=c(0,2000),las=2)
 
-dataH=merge(dataH, summary, by="Transmitter")
+dataH=merge(dataH, summary, by = "Transmitter")
 
-# Plot total number of detections per eel 
+# Plot total number of detections per eel
 detections = dataH %>%
   group_by(Transmitter)%>%
   select(Transmitter, Detections)%>%
@@ -141,12 +142,16 @@ summary=summarise(detections,
                   days=with(detections, max(Departurenum) - min(Arrivalnum))
 )
 
-
 summary$days=summary$days/(60*60*24)
 par(mar=c(6,4.1,4.1,2.1))
 barplot(summary$days, names.arg=summary$Transmitter, cex.names=0.8, ylim=c(0,1200),las=2)
 
-dataH=merge(dataH, summary, by="Transmitter")
+# SVH-input
+test <- dataH %>%
+            group_by(Transmitter) %>%
+            mutate(days = (max(Departurenum) - min(Arrivalnum))/(60*60*24))
+
+dataH=merge(dataH, summary, by="Transmitter") # SVH: nthis is later reused-> need to be in enrich
 
 # Calculate tracking period in seconds
 detections = dataH %>%
@@ -155,14 +160,14 @@ detections = dataH %>%
 
 summary=summarise(detections,
                   seconds=with(detections, max(Departurenum) - min(Arrivalnum))
-)
+)  # SVH: I would use another name as seconds...
 
 dataH=merge(dataH, summary, by="Transmitter")
 
 #########################################################
 # Add day, night and twilight
 
-Diurnal<-"../resident-eel-polder-analysis//data//external//Diurnal.csv" 
+Diurnal<-"./data/external/Diurnal.csv"
 Diurnal<-read.csv(Diurnal, header=TRUE, stringsAsFactors=FALSE)
 
 # Preprocessing format
@@ -252,7 +257,7 @@ dataH <- intervals.with.daynight
 dataH$sunrise.dt <- NULL
 dataH$sunset.dt <- NULL
 dataH$civbegin.dt <- NULL
-dataH$civend.dt <- NULL 
+dataH$civend.dt <- NULL
 
 # Check number of diurnal phases
 table(dataH$daynight)
@@ -278,7 +283,7 @@ dotchart(dataH$precipitation, xlab = "Precipitation (mm)",
 datax=dataH[which(dataH$pump < "0"), ]
 
 for (i in 1:dim(dataH)[1]){
-  if (dataH$pump[i] < 0){  
+  if (dataH$pump[i] < 0){
     dataH$pump[i] <- "0"
   }
 }
@@ -471,8 +476,9 @@ DataHdistance = distinct(select(Distance, Transmitter, Length, Weight, Stadium, 
 #write.csv(DataHdistance, "DataHdistance.csv")
 
 # Load in DataHdistance
-DataHdistance<-"DataHdistance.csv" 
-DataHdistance<-read.csv(DataHdistance, header=TRUE, stringsAsFactors=FALSE)
+DataHdistance <- "data/interim/DataHdistance.csv"
+DataHdistance <- read.csv(DataHdistance, header = TRUE,
+                          stringsAsFactors = FALSE)
 
 # Remove eels with 14 days tracking and less (A69-1601-29923, A69-1601-31863, A69-1601-31882, A69-1601-31883)
 DataHdistance <- DataHdistance[ ! DataHdistance$Transmitter %in% c("A69-1601-29923", "A69-1601-31863", "A69-1601-31882", "A69-1601-31883"), ]
@@ -502,6 +508,7 @@ summary=summarise(summary,
 
 summary$locations=NULL
 summary$eels=as.numeric(summary$eels)
+eel_per_loc <- summary
 barplot(summary$eels, names.arg=summary$Catch_location_type, cex.names=0.8, main="Number of detected eels per catch location type", ylab="Number of eels")
 
 
@@ -509,7 +516,36 @@ barplot(summary$eels, names.arg=summary$Catch_location_type, cex.names=0.8, main
 boxplot(distance2~Catch_location, DataHdistance, xlab = "Catch location", ylab = "Distance (m)")
 
 # Create boxplot with distance for each catch location type
-boxplot(distance2~Catch_location_type, DataHdistance, xlab = "Catch location type", ylab = "Distance (m)", ylim=c(0, 20000), cex.lab=1.25, cex.axis=1.25)
+# TODO: add number of eels (transmitter IDs) taken into account at the top of the boxplot?
+
+#
+# make a named list for the location of the number of eels
+eel_per_loc <- summary
+eels_per_loc_list <- rep(20000, 3)
+names(eels_per_loc_list) <- eel_per_loc$Catch_location_type
+# create ggplot (cfr. styling earlier plot)
+fig_homerange <- ggplot(DataHdistance, aes(x = Catch_location_type,
+                                           y = distance2)) +
+                    geom_boxplot() +
+                    scale_y_continuous(breaks = seq(0, 15000, by = 5000)) +
+                    theme_minimal() +
+                    ylab("Distance (m)") +
+                    geom_text(data = data.frame(),
+                              aes(x = names(eels_per_loc_list),
+                                  y = eels_per_loc_list,
+                                  label = as.character(eel_per_loc$eels)),
+                              col = 'black', size = 6) +
+                    xlab("") +
+                    theme(axis.title.y = element_text(margin = margin(r = 5))) +
+                    theme(axis.text = element_text(size = 14),
+                          axis.title = element_text(size = 16))
+ggsave(fig_homerange, file = './home_range_boxplot.png')
+#--------------------------------
+
+boxplot(distance2~Catch_location_type, DataHdistance,
+        xlab = "Catch location type",
+        ylab = "Distance (m)",
+        ylim=c(0, 20000), cex.lab=1.25, cex.axis=1.25)
 
 # Create boxplot with distance for each stadium
 boxplot(distance2~Stadium, DataHdistance, xlab = "Stadium", main="Home range per stadium", ylab = "Distance (m)", ylim=c(0, 20000), cex.lab=1.25, cex.axis=1.25)
@@ -517,7 +553,7 @@ boxplot(distance2~Stadium, DataHdistance, xlab = "Stadium", main="Home range per
 # Plot distance to weight
 plot(distance2~Weight, DataHdistance, xlab = "Weight (g)", main="Distance to weight", ylab = "Distance (m)")
 abline(lm(DataHdistance$distance2~DataHdistance$Weight), col="red") # regression line (y~x)
-lines(lowess(DataHdistance$Weight,DataHdistance$distance2), col="blue") # lowess line (x,y) 
+lines(lowess(DataHdistance$Weight,DataHdistance$distance2), col="blue") # lowess line (x,y)
 
 # Is distance correlated with tracked time?
 correlation<- cor.test(DataHdistance$days,DataHdistance$distance2, use = "pairwise.complete.obs", method = "spearman")$estimate
@@ -554,8 +590,9 @@ mean(Polder$distance2)
 var(Polder$distance2)
 sd(Polder$distance2)
 
-
+###########################
 # Create linear model
+###########################
 lm <- lm(tdistance~Catch_location_type, data=DataHdistance)
 summary(lm)
 anova(lm)
@@ -571,7 +608,7 @@ hist(DataHdistance$distance2)
 qqnorm(lm.stdres,
           ylab="Standardized Residuals",
           xlab="Normal Scores",
-          main="Distance") 
+          main="Distance")
 qqline(lm.stdres)
 
 shapiro.test(lm.stdres)    # p-value > 0.05: no evidence against null hypothesis (= data is normal distributed)
@@ -692,9 +729,9 @@ result <- lapply(
 
 
 
-# Request records from first tag for first list (list with movement = 1)  
+# Request records from first tag for first list (list with movement = 1)
 #x=as.data.frame(result[[1]][[1]])
-# Request records from first tag for second list (list with movement = 0)    
+# Request records from first tag for second list (list with movement = 0)
 #y=as.data.frame(result[[1]][[2]])
 
 # Make 1 dataframe
@@ -1242,7 +1279,7 @@ summary(aov)
 par(mfrow=c(1,2))     # set graphics window to plot side-by-side
 plot(aov, 1)          # graphical test of homogeneity
 plot(aov, 2)          # graphical test of normality
-# A similar graphical test of residuals by groups can be had this way, provided there are no missing values in the data: 
+# A similar graphical test of residuals by groups can be had this way, provided there are no missing values in the data:
 boxplot(aov$resid ~ df$daynight)
 
 # Transformation
@@ -1375,7 +1412,7 @@ summary(aov)
 par(mfrow=c(1,2))     # set graphics window to plot side-by-side
 plot(aov, 1)          # graphical test of homogeneity
 plot(aov, 2)          # graphical test of normality
-# A similar graphical test of residuals by groups can be had this way, provided there are no missing values in the data: 
+# A similar graphical test of residuals by groups can be had this way, provided there are no missing values in the data:
 boxplot(aov$resid ~ df$daynight)
 
 # Transformation
@@ -1522,7 +1559,7 @@ summary(aov)
 par(mfrow=c(1,2))     # set graphics window to plot side-by-side
 plot(aov, 1)          # graphical test of homogeneity
 plot(aov, 2)          # graphical test of normality
-# A similar graphical test of residuals by groups can be had this way, provided there are no missing values in the data: 
+# A similar graphical test of residuals by groups can be had this way, provided there are no missing values in the data:
 boxplot(aov$resid ~ df$daynight)
 
 # Transformation
@@ -1678,7 +1715,7 @@ levels(ind.per.month$Transmitter)
 
 
 # Create figure with temperature per month
-# Add month 
+# Add month
 temp$Month=month(temp$Timestamp)
 temp$Month = as.factor(temp$Month)
 ggplot(temp, aes(x=Month, y=Value)) + geom_point() +
@@ -1921,7 +1958,7 @@ for (i in 1:9) {
     qqnorm(y)
     qqline(y)
   }
-  
+
 }
 
 
@@ -1971,7 +2008,7 @@ plot(glm)
 DF=dataH
 
 write.csv(DF, "DF.csv")
-DF<-"DF.csv" 
+DF<-"DF.csv"
 DF<-read.csv(DF, header=TRUE, stringsAsFactors=FALSE)
 
 par(mfrow= c (1,2))
@@ -2019,7 +2056,7 @@ plot(glm60)
 drop1(lm)
 
 boxplot(swimdistance~Month, data=dataHlm, xlab='Month', ylab='Distance (m)')
-range(dataHlm$swimdistance)       
+range(dataHlm$swimdistance)
 
 
 
@@ -2150,7 +2187,7 @@ for (j in Alllocs){
     Temp = dataH$Temp,
     fmonth = "8",
     floc = "Polder",
-    fdaynight="Night") 
+    fdaynight="Night")
   n <- dim(mydata)[1]
   if (n > 10){
     glm100 <- predict(glm11, mydata,
@@ -2389,7 +2426,7 @@ step(glm)
 # Use the confint function to obtain confidence intervals for the coefficient estimates
 confint(glm)
 
-# How well our model fits depends on the difference between the model and the observed data.  
+# How well our model fits depends on the difference between the model and the observed data.
 # One approach for binary data is to implement a Hosmer Lemeshow goodness of fit test.
 hoslem.test(data2$movement, fitted(glm))
 # Model fits well if there is no significant difference (p-value > 0.05) between model and observed data
@@ -2398,7 +2435,7 @@ hoslem.test(data2$movement, fitted(glm))
 # Plot relationship of 1 explanatory variable vs response variable
 model = glm(movement ~  Temp, family=binomial, data=data2)
 summary(model)
-# To plot our model we need a range of values of Temp for which to produce fitted values. 
+# To plot our model we need a range of values of Temp for which to produce fitted values.
 # This range of values we can establish from the actual range of values of Temp.
 range(data2$Temp)
 xTemp <- seq(0, 25, 0.01)  # 0 and 25 are based on min and max of range, 0.01 is the increment

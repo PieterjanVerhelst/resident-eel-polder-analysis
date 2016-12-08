@@ -1,0 +1,51 @@
+---
+title: "exploratory_plots"
+author: "Stijn Van Hoey"
+date: "September 30, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = FALSE}
+library(dplyr)
+library(ggplot2)
+
+dataH <- "data/interim/dataH_enriched.csv"
+dataH <- read.csv(dataH, header = TRUE, stringsAsFactors = FALSE)
+```
+
+## Plot number of eel per location
+
+```{r pressure, echo=FALSE}
+# Plot number of eel per location
+detections <- dataH %>% group_by(Station.Name, Transmitter) %>%
+                            count() %>% 
+                            group_by(Station.Name) %>% 
+                            count()
+ggplot(detections, aes(x = Station.Name, y = nn)) + 
+    geom_bar(stat = "identity") + 
+    ylab("Number of eel per location")
+
+```
+
+## Plot number of locations per eel
+
+```{r}
+detections <- dataH %>% group_by(Station.Name, Transmitter) %>%
+                            count() %>% 
+                            group_by(Transmitter) %>% 
+                            count()
+ggplot(detections, aes(x = Transmitter, y = nn)) + 
+    geom_bar(stat = "identity") + 
+    ylab("Number of locations per eel") +
+    coord_flip()
+```
+
+
+
+
+
+
