@@ -179,5 +179,18 @@ dataH$civend.dt <- NULL
 table(dataH$daynight)
 
 
+#############################
+# REMOVE OUTLIER (NEGATIVE VALUES) IN PUMP ENVIRONMENTAL VARIABLE
+#############################
+datax=dataH[which(dataH$pump < "0"), ]
+
+for (i in 1:dim(dataH)[1]){
+  if (dataH$pump[i] < 0){
+    dataH$pump[i] <- "0"
+  }
+}
+
+dataH$pump=as.numeric(dataH$pump)
+
 
 
