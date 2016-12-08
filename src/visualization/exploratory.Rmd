@@ -20,7 +20,6 @@ dataH <- read.csv(dataH, header = TRUE, stringsAsFactors = FALSE)
 ## Plot number of eel per location
 
 ```{r pressure, echo=FALSE}
-# Plot number of eel per location
 detections <- dataH %>% group_by(Station.Name, Transmitter) %>%
                             count() %>% 
                             group_by(Station.Name) %>% 
@@ -42,6 +41,27 @@ ggplot(detections, aes(x = Transmitter, y = nn)) +
     geom_bar(stat = "identity") + 
     ylab("Number of locations per eel") +
     coord_flip()
+```
+
+## Plot number of moves
+
+```{r}
+detections = dataH %>% group_by(Transmitter) %>%
+                          select(Transmitter)
+
+detections$moves="1"
+detections$moves=as.numeric(detections$moves)
+
+
+summary=summarise(detections,
+                  eels=n_distinct(Transmitter),
+                  moves=n()
+)
+
+summary$eels=NULL
+summary$moves=as.numeric(summary$moves)
+par(mar=c(6,4.1,4.1,2.1))
+barplot(summary$moves, names.arg=summary$Transmitter, cex.names=0.8, ylim=c(0,2000),las=2)
 ```
 
 
