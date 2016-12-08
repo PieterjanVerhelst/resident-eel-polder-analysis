@@ -18,14 +18,15 @@ detections2 = df%>%
 df=summarise(detections2,
              sum=sum(swimdistance))
 
+# Transformation
+df$tsum=log(df$sum)
 
-par(mar=c(6,4.1,4.1,2.1))
-barplot(df$sum, names.arg=df$Month, cex.names=0.8, ylim=c(0,15000),las=1)
+# non-parametric Kruskall Wallis test as alternative for one-way ANOVA
+kw=kruskal.test(df$tsum ~ df$Month)
+kw
 
-
-# Create boxplot with swim distance for each month
-df$Month<-factor(df$Month)
-boxplot(sum~Month, df, xlab = "Month", ylab = "Swim distance per month (m)", ylim=c(0, 12000), cex.lab=1.25, cex.axis=1.25)
+# pairwise comparison
+posthoc.kruskal.dunn.test(x=df$tsum, g=df$Month, p.adjust.method="bonferroni")
 
 
 
