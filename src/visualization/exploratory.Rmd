@@ -77,7 +77,21 @@ par(mar=c(6,4.1,4.1,2.1))
 barplot(detections$maxdetections, names.arg=detections$Transmitter, cex.names=0.8, ylim=c(0,350000), las=2)
 ```
 
+## Calculate tracking period in days
 
+```{r}
+detections = dataH %>%
+  group_by(Transmitter)%>%
+  select(Transmitter, Arrivalnum, Departurenum)
+
+summary=summarise(detections,
+                  days=with(detections, max(Departurenum) - min(Arrivalnum))
+)
+
+summary$days=summary$days/(60*60*24)
+par(mar=c(6,4.1,4.1,2.1))
+barplot(summary$days, names.arg=summary$Transmitter, cex.names=0.8, ylim=c(0,1200),las=2)
+```
 
 
 
