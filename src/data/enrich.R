@@ -180,7 +180,7 @@ table(dataH$daynight)
 
 
 #############################
-# REMOVE OUTLIER (NEGATIVE VALUES) IN PUMP ENVIRONMENTAL VARIABLE
+# REMOVE OUTLIERS (NEGATIVE VALUES) IN PUMP ENVIRONMENTAL VARIABLE
 #############################
 datax=dataH[which(dataH$pump < "0"), ]
 
