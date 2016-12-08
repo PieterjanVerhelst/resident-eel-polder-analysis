@@ -87,3 +87,114 @@ df=t3
 df=na.omit(df)
 sum(is.na(df))
 
+
+####################
+# APPLY GLMM
+####################
+# Calculate summary with AIC
+modlist = list(
+  glmer(movement ~ precipitation + Temp + pressure + pump + floc + (1|fyear), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pressure + pump + floc + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pressure + pump + floc + (1|ftag), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pressure + pump + floc + (1|fyear) + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pressure + pump + floc + (1|fyear) + (1|ftag), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pressure + pump + floc + (1|fmonth) + (1|ftag), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pressure + pump + floc + (1|fyear) + (1|fmonth) + (1|ftag), family=binomial(logit), data=df)
+  )
+
+sem.model.fits(modlist)
+
+# Model with only (1|fmonth) as random effect has lowest AIC (2174.119)
+glmm = glmer(movement ~ precipitation + Temp + pressure + pump + floc + (1|fmonth), family=binomial(logit), data=df)
+summary(glmm)
+display(glmm)
+VarCorr(glmm)      # Shows correlation between random effect and intercept
+
+# # Apply stepwise backwards selection based on AIC
+
+modlist = list(
+  glmer(movement ~ Temp + pressure + pump + floc + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + pressure + pump + floc + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pump + floc + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pressure + floc + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pressure + pump + (1|fmonth), family=binomial(logit), data=df)
+  )
+
+sem.model.fits(modlist)
+
+# Last model (without floc) has lowest AIC (2170.127)
+modlist = list(
+  glmer(movement ~ Temp + pressure + pump + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + pressure + pump + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pump + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + pressure + (1|fmonth), family=binomial(logit), data=df)
+)
+
+sem.model.fits(modlist)
+
+# Third model (without pressure) has lowest AIC (2168.373)
+modlist = list(
+  glmer(movement ~ Temp + pump + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + pump + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + Temp + (1|fmonth), family=binomial(logit), data=df)
+)
+
+sem.model.fits(modlist)
+
+# Third model (without pump) has lowest AIC (2166.654)
+modlist = list(
+  glmer(movement ~ Temp + (1|fmonth), family=binomial(logit), data=df),
+  glmer(movement ~ precipitation + (1|fmonth), family=binomial(logit), data=df)
+)
+
+sem.model.fits(modlist)
+
+# Second model (without temperature) has lowest AIC (2165.677)
+# No more improvement of model (AIC does not lower anymore).
+# Best model is:
+glmm <- glmer(movement ~ precipitation + (1|fmonth), family=binomial(logit), data=df)
+summary(glmm)
+
+VarCorr(glmm)      # Shows correlation between random effect and intercept
+sem.model.fits(glmm)
+plot(glmm)
+
+# Check final model for overdispersion
+dispersion_glmer(glmm)   # It should not be over 1.4
+
+# Model validation
+# Create contingency table
+check_model <- table(df$movement,fitted.values(glmm)>0.5)
+# Calculate kappa
+kap <- function(x) {
+  a <- (x[1,1] + x[2,2]) / sum(x)
+  e <- (sum(x[1,]) / sum(x)) * (sum(x[,1]) / sum(x)) + (1 - (sum(x[1,]) / sum(x))) * (1 - (sum(x[,1]) / sum(x)))
+  (a-e)/(1-e)
+}
+
+kap(check_model)
+
+
+#############################################
+# Apply Random Forests
+#############################################
+set.seed(500)
+
+# Apply RF; if response variable is categorical, classification is assumed; otherwise, regression is assumed
+fit = randomForest(factor(movement) ~ precipitation + Temp + pressure + pump + floc, data=df, importance = TRUE, ntree=6000)
+varImpPlot(fit)
+importance(fit)
+
+
+# Calculate kappa
+x=as.data.frame(fit$confusion)
+x$class.error = NULL
+x=as.matrix(x)
+kap <- function(x) {
+  a <- (x[1,1] + x[2,2]) / sum(x)
+  e <- (sum(x[1,]) / sum(x)) * (sum(x[,1]) / sum(x)) + (1 - (sum(x[1,]) / sum(x))) * (1 - (sum(x[,1]) / sum(x)))
+  (a-e)/(1-e)
+}
+kap(x)
+
+
