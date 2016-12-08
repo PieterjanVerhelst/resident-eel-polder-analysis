@@ -3,7 +3,7 @@
 # PIETERJAN VERHELST
 
 # Follows ON 'Analysis_HomeRange'
-
+source(Analysis_HomeRange.R)
 
 ###########################
 # Create linear model
