@@ -75,7 +75,7 @@ tracking_length <- dataH %>%
                     mutate(total_tracking = max(Departurenum) - min(Arrivalnum))
 
 # Add the total lengths to
-dataH=merge(dataH, summary, by="Transmitter")
+dataH=merge(dataH, tracking_length, by="Transmitter")
 
 
 
