@@ -13,6 +13,7 @@ summary(lm)
 anova(lm)
 
 # Check assumptions
+
 # 1) Create normal probability plot of residuals
 lm.stdres = rstandard(lm)
 
@@ -27,3 +28,8 @@ qqnorm(lm.stdres,
 qqline(lm.stdres)
 
 shapiro.test(lm.stdres) # p-value > 0.05: no evidence against null hypothesis (= data is normal distributed)
+
+# 2) Check homogeneity of variance
+par(mar = c(4, 10, 2, 3))
+par(mfrow = c(2, 2))
+plot(lm) # Here also normality of residuals in QQ plot
