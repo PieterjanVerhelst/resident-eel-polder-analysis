@@ -20,7 +20,6 @@ dataH <- read.csv(dataH, header = TRUE, stringsAsFactors = FALSE)
 ## Plot number of eel per location
 
 ```{r pressure, echo=FALSE}
-# Plot number of eel per location
 detections <- dataH %>% group_by(Station.Name, Transmitter) %>%
                             count() %>% 
                             group_by(Station.Name) %>% 
@@ -44,8 +43,55 @@ ggplot(detections, aes(x = Transmitter, y = nn)) +
     coord_flip()
 ```
 
+## Plot number of moves
+
+```{r}
+detections = dataH %>% group_by(Transmitter) %>%
+                          select(Transmitter)
+
+detections$moves="1"
+detections$moves=as.numeric(detections$moves)
 
 
+summary=summarise(detections,
+                  eels=n_distinct(Transmitter),
+                  moves=n()
+)
+
+summary$eels=NULL
+summary$moves=as.numeric(summary$moves)
+par(mar=c(6,4.1,4.1,2.1))
+barplot(summary$moves, names.arg=summary$Transmitter, cex.names=0.8, ylim=c(0,2000),las=2)
+```
+
+## Plot total number of detections per eel 
+
+```{r}
+detections = dataH %>%
+  group_by(Transmitter)%>%
+  select(Transmitter, Detections)%>%
+  summarize(maxdetections = sum(Detections))
+
+detections$maxdetections=as.numeric(detections$maxdetections)
+par(mar=c(6,4.1,4.1,2.1))
+barplot(detections$maxdetections, names.arg=detections$Transmitter, cex.names=0.8, ylim=c(0,350000), las=2)
+```
+
+## Calculate tracking period in days
+
+```{r}
+detections = dataH %>%
+  group_by(Transmitter)%>%
+  select(Transmitter, Arrivalnum, Departurenum)
+
+summary=summarise(detections,
+                  days=with(detections, max(Departurenum) - min(Arrivalnum))
+)
+
+summary$days=summary$days/(60*60*24)
+par(mar=c(6,4.1,4.1,2.1))
+barplot(summary$days, names.arg=summary$Transmitter, cex.names=0.8, ylim=c(0,1200),las=2)
+```
 
 
 
