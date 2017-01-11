@@ -3,34 +3,9 @@
 # PIETERJAN VERHELST
 
 library(dplyr)
-library(randomForest)
-library(mgcv)
-library(geoR)
 library(lubridate)
-library(data.table)
-library(knitr)
-library(nortest)     # for normality tests
-library(car)
-library(censReg)
-library(ResourceSelection)
-library(userfriendlyscience)
-library(PMCMR)
-library(usdm)     # warning: this package masks 'select' from package dplyr
-library(aod)
-library(lme4)
-library(multcomp)
-library(geepack)
-library(AICcmodavg)
-library(gridExtra)
-library(nlme)
-library(piecewiseSEM)
-library(arm)
-library(psych)
-library("blmeco")   # Package to check for overdisperion in GLMMs
-library(vcd)        # To calculate kappa
-library(arm)        # To give nice model output
 
-#detach("package:usdm", unload=TRUE)
+
 
 # Load in homing data
 dataH <- "data/interim/dataH.csv"
@@ -55,3 +30,6 @@ dataH=dataH[dataH$Station.Name %in% polder,]
 
 # Remove eels with 14 days tracking and less (A69-1601-29923, A69-1601-31863, A69-1601-31882, A69-1601-31883)
 dataH <- dataH[ ! dataH$Transmitter %in% c("A69-1601-29923", "A69-1601-31863", "A69-1601-31882", "A69-1601-31883"), ]
+
+
+# dataH is now ready for linking eel characteristics and data analysis
