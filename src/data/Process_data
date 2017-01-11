@@ -32,4 +32,3 @@ dataH=dataH[dataH$Station.Name %in% polder,]
 dataH <- dataH[ ! dataH$Transmitter %in% c("A69-1601-29923", "A69-1601-31863", "A69-1601-31882", "A69-1601-31883"), ]
 
 
-# dataH is now ready for linking eel characteristics and data analysis
