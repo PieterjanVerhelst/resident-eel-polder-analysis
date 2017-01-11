@@ -1,3 +1,16 @@
+# ANALYSIS OF ENVIRONMENTAL FACTORS AFFECTING EEL DISPERSION - GLMM & RF
+
+# PIETERJAN VERHELST
+
+library(randomForest)
+library(mgcv)
+library(userfriendlyscience)
+library(lme4)
+library(piecewiseSEM)
+library(blmeco)
+
+
+
 # Categorize the explanatory variable:
 # <= 500 m = 0 (low displacement) & >500 m = 1 (high displacement)
 # Apply this for the categories 500 m, 1000 m and 1500 m
