@@ -18,6 +18,10 @@ DataHdistance$distance2 <- as.numeric(DataHdistance$distance2)
 # TODO: add number of eels (transmitter IDs) taken into account at the top of the boxplot?
 
 #
+DataHdistance$Catch_location_type <- factor(DataHdistance$Catch_location_type,
+                                            levels = c("Pond", "Canal", "Polder"),
+                                            ordered = TRUE)
+
 # make a named list for the location of the number of eels
 eel_per_loc <- summary(DataHdistance$Catch_location_type)
 eels_per_loc_list <- rep(20000, 3)
