@@ -18,10 +18,14 @@ DataHdistance$distance2 <- as.numeric(DataHdistance$distance2)
 # TODO: add number of eels (transmitter IDs) taken into account at the top of the boxplot?
 
 #
+DataHdistance$Catch_location_type <- factor(DataHdistance$Catch_location_type,
+                                            levels = c("Pond", "Canal", "Polder"),
+                                            ordered = TRUE)
+
 # make a named list for the location of the number of eels
-eel_per_loc <- summary
+eel_per_loc <- summary(DataHdistance$Catch_location_type)
 eels_per_loc_list <- rep(20000, 3)
-names(eels_per_loc_list) <- eel_per_loc$Catch_location_type
+names(eels_per_loc_list) <- names(eel_per_loc)
 # create ggplot (cfr. styling earlier plot)
 fig_homerange <- ggplot(DataHdistance, aes(x = Catch_location_type,
                                            y = distance2)) +
@@ -32,7 +36,7 @@ fig_homerange <- ggplot(DataHdistance, aes(x = Catch_location_type,
                     geom_text(data = data.frame(),
                               aes(x = names(eels_per_loc_list),
                                   y = eels_per_loc_list,
-                                  label = as.character(eel_per_loc$eels)),
+                                  label = as.character(eel_per_loc)),
                               col = 'black', size = 6) +
                     xlab("") +
                     theme(axis.title.y = element_text(margin = margin(r = 5))) +
